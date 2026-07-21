@@ -151,6 +151,14 @@
             width: min(360px, calc(100vw - 48px));
           }
         }
+
+        /* Body media section: centered with side margins on desktop
+           (page-width), but kept edge-to-edge on mobile as before. */
+        @media screen and (max-width: 749px) {
+          .section.color-custom-section_NaqU9X.section--page-width > * {
+            grid-column: 1 / -1;
+          }
+        }
       </style>
     {% endif %}
 
