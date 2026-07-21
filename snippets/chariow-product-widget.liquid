@@ -1,0 +1,50 @@
+{%- comment -%}
+  Chariow Snap widget for the product page.
+
+  The Chariow product is selected from the template suffix, so each Shopify
+  product shows its OWN widget (never a shared one):
+    - product.inoubliable template -> INOUBLIABLE (prd_1qimg7sr)
+    - product.programme  template  -> Programme   (prd_rxxgmeo0)
+
+  This snippet is only rendered by blocks/buy-buttons.liquid when the page is a
+  Chariow-enabled product (see `chariow_enabled` there). Keep the widget id
+  (#chariow-widget) unique: the sticky CTA in layout/theme.liquid triggers
+  whatever widget is present on the page.
+{%- endcomment -%}
+
+{%- liquid
+  case template.suffix
+  when 'programme'
+    assign chariow_product_id = 'prd_rxxgmeo0'
+    assign chariow_cta_animation = 'none'
+    assign chariow_redirect_url = ''
+  else
+    # Default = INOUBLIABLE.
+    assign chariow_product_id = 'prd_1qimg7sr'
+    assign chariow_cta_animation = 'shine'
+    # Post-purchase upsell: after a confirmed INOUBLIABLE purchase, Chariow can
+    # redirect the buyer to the Programme page. Verify this handle in Shopify
+    # admin (Products > Programme > "Modifier l'URL et le lien") and set the
+    # SAME url in the Chariow product redirect settings (authoritative method).
+    assign upsell_handle = 'programme-30-jours-pour-devenir-inoubliable'
+    assign chariow_redirect_url = shop.url | append: '/products/' | append: upsell_handle
+  endcase
+-%}
+
+<div id="chariow-widget-anchor" class="chariow-widget-anchor">
+  <div
+    id="chariow-widget"
+    data-product-id="{{ chariow_product_id }}"
+    data-store-domain="xavtkplr.mychariow.co"
+    data-style="showcase"
+    data-border-style="rounded"
+    data-cta-width="xs"
+    data-cta-animation="{{ chariow_cta_animation }}"
+    data-locale="en"
+    data-primary-color="#FFCC00"
+    data-background-color="#FFFFFF"
+    {%- if chariow_redirect_url != blank %}
+      data-redirect-url="{{ chariow_redirect_url }}"
+    {%- endif %}
+  ></div>
+</div>

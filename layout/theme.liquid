@@ -1,0 +1,304 @@
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {% comment %}
+      Opt into cross-document (MPA) view transitions and hold first paint until #MainContent
+      parses, so the transition runs consistently.
+      Both are gated on the same settings as the view-transitions.js opt-out switch (see snippets/scripts.liquid).
+    {% endcomment %}
+    {% if settings.transition_to_main_product or settings.page_transition_enabled %}
+      {% style %}
+        @media (prefers-reduced-motion: no-preference) {
+          @view-transition {
+            navigation: auto;
+          }
+        }
+      {% endstyle %}
+      <link
+        rel="expect"
+        href="#MainContent"
+        blocking="render"
+        id="view-transition-render-blocker"
+      >
+    {% endif %}
+
+    {%- render 'meta-tags' -%}
+    {%- render 'stylesheets' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-palette' -%}
+
+    {%- liquid
+      # Chariow only powers the products mapped to a Chariow template. Any other
+      # product keeps the standard Shopify checkout (no widget, no sticky CTA).
+      assign chariow_enabled = false
+      if request.page_type == 'product'
+        if template.suffix == 'inoubliable' or template.suffix == 'programme'
+          assign chariow_enabled = true
+        endif
+      endif
+    -%}
+
+    {% if chariow_enabled %}
+      <link rel="stylesheet" href="https://js.chariowcdn.com/v1/widget.min.css">
+      <style>
+        .chariow-widget-anchor {
+          min-block-size: 48px;
+        }
+
+        .chariow-sticky-cta {
+          position: fixed;
+          z-index: 1000;
+          right: max(16px, env(safe-area-inset-right));
+          bottom: max(16px, env(safe-area-inset-bottom));
+          left: max(16px, env(safe-area-inset-left));
+          display: flex;
+          justify-content: center;
+          pointer-events: none;
+          opacity: 0;
+          transform: translateY(16px);
+          transition: opacity 180ms ease, transform 180ms ease;
+        }
+
+        .chariow-sticky-cta.is-visible {
+          pointer-events: auto;
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .chariow-sticky-cta__button {
+          width: min(100%, 420px);
+          min-height: 52px;
+          border: 0;
+          border-radius: 999px;
+          padding: 14px 24px;
+          background: #FFCC00;
+          box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+          color: #111111;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+        }
+
+        .chariow-sticky-cta__button:focus-visible {
+          outline: 3px solid #111111;
+          outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+          .chariow-sticky-cta.is-visible .chariow-sticky-cta__button {
+            animation: chariow-horizontal-shake 2.8s ease-in-out infinite;
+          }
+
+          @keyframes chariow-horizontal-shake {
+            0%,
+            80%,
+            100% {
+              transform: translateX(0);
+            }
+
+            83% {
+              transform: translateX(-8px);
+            }
+
+            86% {
+              transform: translateX(8px);
+            }
+
+            89% {
+              transform: translateX(-6px);
+            }
+
+            92% {
+              transform: translateX(6px);
+            }
+
+            95% {
+              transform: translateX(-3px);
+            }
+
+            98% {
+              transform: translateX(0);
+            }
+          }
+        }
+
+        @media (min-width: 750px) {
+          .chariow-sticky-cta {
+            right: 24px;
+            bottom: 24px;
+            left: auto;
+            width: min(360px, calc(100vw - 48px));
+          }
+        }
+      </style>
+    {% endif %}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+
+    {% render 'chat-drawer' %}
+
+    <div class="page-wrapper">
+      <div id="header-group">
+        {% sections 'header-group' %}
+      </div>
+
+      <script>
+        // Inline header height and menu style calculations to prevent layout shift
+        // Note: Updates in calculateHeaderGroupHeight(), updateTransparentHeaderOffset() and setHeaderMenuStyle() utilities.js should be kept in sync with this function
+        (function setHeaderHeighCustomProperties() {
+          /*
+           * Header calculation functions for maintaining CSS variables
+           * Mimic calculateHeaderGroupHeight() in utilities.js
+           */
+          const header = document.querySelector('header-component');
+          const headerGroup = document.querySelector('#header-group');
+          const hasHeaderSection = headerGroup?.querySelector('.header-section');
+
+          if (!header || !headerGroup) return;
+
+          const headerTopRow = header.querySelector('.header__row--top');
+          const headerHeight = header.offsetHeight;
+
+          // Calculate the total height of the header group
+          let headerGroupHeight = 0;
+          const children = headerGroup.children;
+          for (let i = 0; i < children.length; i++) {
+            const element = children[i];
+            if (element === header || !(element instanceof HTMLElement)) continue;
+            headerGroupHeight += element.offsetHeight;
+          }
+
+          // Check for transparent header special case
+          if (header.hasAttribute('transparent') && header.parentElement?.nextElementSibling) {
+            headerGroupHeight += headerHeight;
+          }
+
+          // Set CSS variables
+          document.body.style.setProperty('--header-height', `${headerHeight}px`);
+          document.body.style.setProperty('--header-group-height', `${headerGroupHeight}px`);
+
+          if (headerTopRow) {
+            window.requestAnimationFrame(function () {
+              document.body.style.setProperty('--top-row-height', `${headerTopRow.offsetHeight}px`);
+            });
+          }
+
+          /**
+           * Updates CSS custom properties for transparent header offset calculation
+           * Mimic updateTransparentHeaderOffset() in utilities.js
+           */
+
+          if (!hasHeaderSection || !header?.hasAttribute('transparent')) {
+            document.body.style.setProperty('--transparent-header-offset-boolean', '0');
+            return;
+          }
+
+          const hasImmediateSection = hasHeaderSection.nextElementSibling?.classList.contains('shopify-section');
+
+          const shouldApplyOffset = !hasImmediateSection ? '1' : '0';
+          document.body.style.setProperty('--transparent-header-offset-boolean', shouldApplyOffset);
+        })();
+
+        (function setHeaderMenuStyle() {
+          const headerComponent = document.querySelector('#header-component');
+          if (headerComponent) {
+            const isTouchDevice = 'ontouchstart' in window && navigator.maxTouchPoints > 0;
+            const overflowList = headerComponent?.querySelector('overflow-list');
+            const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
+            headerComponent.dataset.menuStyle = isTouchDevice || hasReachedMinimum ? 'drawer' : 'menu';
+          }
+        })();
+      </script>
+
+      <main
+        id="MainContent"
+        class="content-for-layout"
+        role="main"
+        data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+        data-product-transition="{{ settings.transition_to_main_product }}"
+        data-template="{{ template }}"
+      >
+        {{ content_for_layout }}
+      </main>
+
+      <footer>
+        {% sections 'footer-group' %}
+      </footer>
+    </div>
+
+    {% render 'cart-drawer', render_wrapper: true %}
+    {% render 'theme-drawer' %}
+
+    {% render 'search-modal' %}
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+
+    {% if chariow_enabled %}
+      <div class="chariow-sticky-cta" data-chariow-sticky-cta>
+        <button class="chariow-sticky-cta__button" type="button" data-chariow-sticky-button>
+          Commander maintenant
+        </button>
+      </div>
+
+      <script src="https://js.chariowcdn.com/v1/widget.min.js" async></script>
+      <script>
+        (function () {
+          const anchor = document.querySelector('#chariow-widget-anchor');
+          const stickyCta = document.querySelector('[data-chariow-sticky-cta]');
+          const stickyButton = document.querySelector('[data-chariow-sticky-button]');
+
+          if (!anchor || !stickyCta || !stickyButton) return;
+
+          const setStickyVisibility = (isVisible) => {
+            stickyCta.classList.toggle('is-visible', isVisible);
+          };
+
+          if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(
+              ([entry]) => setStickyVisibility(!entry.isIntersecting),
+              { threshold: 0.1 }
+            );
+            observer.observe(anchor);
+          } else {
+            window.addEventListener('scroll', () => {
+              setStickyVisibility(anchor.getBoundingClientRect().bottom < 0);
+            }, { passive: true });
+          }
+
+          stickyButton.addEventListener('click', () => {
+            const widget = document.querySelector('#chariow-widget');
+            if (!widget) return;
+
+            const action = widget.querySelector('button, [role="button"], a, input[type="button"], input[type="submit"]');
+            (action || widget).click();
+          });
+        })();
+      </script>
+    {% endif %}
+  </body>
+</html>
