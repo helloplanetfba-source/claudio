@@ -1,0 +1,80 @@
+{%- comment -%}
+  Post-purchase "Merci" banner shown at the very top of the Programme page.
+
+  It stays hidden by default and is only revealed when the visitor arrives from
+  a confirmed INOUBLIABLE purchase, i.e. when the URL carries the `?merci`
+  flag added by the Chariow redirect (see snippets/chariow-product-widget.liquid).
+
+  It never links to the ebook file: the page is public, so access to the book
+  stays delivered by Chariow (email / customer space).
+{%- endcomment -%}
+
+<div class="chariow-thankyou" data-chariow-thankyou hidden>
+  <div class="chariow-thankyou__inner">
+    <p class="chariow-thankyou__title">Merci pour ton achat ! 🎉</p>
+    <p class="chariow-thankyou__text">
+      Ton ebook <strong>INOUBLIABLE</strong> vient de t'être envoyé par email
+      (via Chariow) — pense à vérifier tes spams si tu ne le vois pas tout de suite.
+      Envie d'aller plus loin ? Découvre le programme d'accompagnement ci-dessous 👇
+    </p>
+  </div>
+</div>
+
+<style>
+  .chariow-thankyou {
+    background: #FFCC00;
+    color: #111111;
+    border-block-end: 1px solid rgb(0 0 0 / 12%);
+  }
+
+  .chariow-thankyou__inner {
+    max-width: 900px;
+    margin-inline: auto;
+    padding: 18px max(16px, env(safe-area-inset-left)) 20px;
+    text-align: center;
+  }
+
+  .chariow-thankyou__title {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .chariow-thankyou__text {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .chariow-thankyou[data-revealed] {
+      animation: chariow-thankyou-in 320ms ease-out both;
+    }
+
+    @keyframes chariow-thankyou-in {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    var banner = document.querySelector('[data-chariow-thankyou]');
+    if (!banner) return;
+
+    var params = new URLSearchParams(window.location.search);
+    if (!params.has('merci')) return;
+
+    banner.hidden = false;
+    banner.setAttribute('data-revealed', '');
+  })();
+</script>

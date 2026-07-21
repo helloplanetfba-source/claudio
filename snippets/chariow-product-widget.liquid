@@ -27,7 +27,10 @@
     # admin (Products > Programme > "Modifier l'URL et le lien") and set the
     # SAME url in the Chariow product redirect settings (authoritative method).
     assign upsell_handle = 'programme-30-jours-pour-devenir-inoubliable'
-    assign chariow_redirect_url = shop.url | append: '/products/' | append: upsell_handle
+    # The `?merci=1` flag makes the Programme page show its "Merci" banner
+    # (see snippets/chariow-thankyou-banner.liquid). Keep this flag in the URL
+    # you set inside Chariow's product redirect settings too.
+    assign chariow_redirect_url = shop.url | append: '/products/' | append: upsell_handle | append: '?merci=1'
   endcase
 -%}
 
