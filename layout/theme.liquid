@@ -301,10 +301,25 @@
 
           stickyButton.addEventListener('click', () => {
             const widget = document.querySelector('#chariow-widget');
-            if (!widget) return;
+            const target = anchor || widget;
 
-            const action = widget.querySelector('button, [role="button"], a, input[type="button"], input[type="submit"]');
-            (action || widget).click();
+            // Reliable behaviour: bring the customer to the real Chariow widget.
+            // (Chariow renders its CTA in a shadow DOM/iframe, so a synthetic
+            // click on it from the outside is not guaranteed to fire.)
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Best effort: if the widget CTA is reachable in the light DOM,
+            // trigger it too, once the scroll has started.
+            if (widget) {
+              window.setTimeout(() => {
+                const action = widget.querySelector(
+                  'button, [role="button"], a, input[type="button"], input[type="submit"]'
+                );
+                if (action) action.click();
+              }, 400);
+            }
           });
         })();
       </script>
