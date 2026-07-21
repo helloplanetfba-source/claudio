@@ -47,9 +47,14 @@
       # (product.programme). Products on product.plain (or any other suffix) keep
       # the standard Shopify checkout — no widget, no sticky CTA.
       assign chariow_enabled = false
+      assign chariow_sticky_label = 'Commander maintenant'
       if request.page_type == 'product'
-        if template.suffix == blank or template.suffix == 'inoubliable' or template.suffix == 'programme'
+        if template.suffix == 'programme'
           assign chariow_enabled = true
+          assign chariow_sticky_label = 'Commencer le Programme'
+        elsif template.suffix == blank or template.suffix == 'inoubliable'
+          assign chariow_enabled = true
+          assign chariow_sticky_label = 'Télécharger'
         endif
       endif
     -%}
@@ -265,7 +270,7 @@
     {% if chariow_enabled %}
       <div class="chariow-sticky-cta" data-chariow-sticky-cta>
         <button class="chariow-sticky-cta__button" type="button" data-chariow-sticky-button>
-          Commander maintenant
+          {{ chariow_sticky_label }}
         </button>
       </div>
 
