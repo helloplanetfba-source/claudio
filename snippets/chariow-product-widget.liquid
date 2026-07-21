@@ -17,11 +17,14 @@
   when 'programme'
     assign chariow_product_id = 'prd_rxxgmeo0'
     assign chariow_cta_animation = 'none'
+    # Programme keeps Chariow's default accent (no data-primary-color).
+    assign chariow_primary_color = ''
     assign chariow_redirect_url = ''
   else
     # Default = INOUBLIABLE.
     assign chariow_product_id = 'prd_1qimg7sr'
     assign chariow_cta_animation = 'shine'
+    assign chariow_primary_color = '#FFCC00'
     # Post-purchase upsell: after a confirmed INOUBLIABLE purchase, Chariow can
     # redirect the buyer to the Programme page. Verify this handle in Shopify
     # admin (Products > Programme > "Modifier l'URL et le lien") and set the
@@ -44,7 +47,9 @@
     data-cta-width="xs"
     data-cta-animation="{{ chariow_cta_animation }}"
     data-locale="en"
-    data-primary-color="#FFCC00"
+    {%- if chariow_primary_color != blank %}
+      data-primary-color="{{ chariow_primary_color }}"
+    {%- endif %}
     data-background-color="#FFFFFF"
     {%- if chariow_redirect_url != blank %}
       data-redirect-url="{{ chariow_redirect_url }}"
