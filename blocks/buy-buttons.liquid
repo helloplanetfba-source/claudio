@@ -7,12 +7,14 @@
     assign product = collections.all.products.first
   endif
 
-  # Only the products mapped to a Chariow template swap the native Shopify
-  # buttons for the Chariow widget. Every other product keeps the normal
-  # Shopify checkout tunnel.
+  # Chariow powers the INOUBLIABLE and Programme products. INOUBLIABLE lives on
+  # the DEFAULT product template (blank suffix) so it works with no admin step;
+  # Programme uses the `product.programme` template. Any product moved to the
+  # `product.plain` template (or any other suffix) keeps the normal Shopify
+  # checkout tunnel.
   assign chariow_enabled = false
   if request.page_type == 'product'
-    if template.suffix == 'inoubliable' or template.suffix == 'programme'
+    if template.suffix == blank or template.suffix == 'inoubliable' or template.suffix == 'programme'
       assign chariow_enabled = true
     endif
   endif

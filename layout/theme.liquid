@@ -43,11 +43,12 @@
     {%- render 'color-palette' -%}
 
     {%- liquid
-      # Chariow only powers the products mapped to a Chariow template. Any other
-      # product keeps the standard Shopify checkout (no widget, no sticky CTA).
+      # Chariow powers INOUBLIABLE (default template, blank suffix) and Programme
+      # (product.programme). Products on product.plain (or any other suffix) keep
+      # the standard Shopify checkout — no widget, no sticky CTA.
       assign chariow_enabled = false
       if request.page_type == 'product'
-        if template.suffix == 'inoubliable' or template.suffix == 'programme'
+        if template.suffix == blank or template.suffix == 'inoubliable' or template.suffix == 'programme'
           assign chariow_enabled = true
         endif
       endif
